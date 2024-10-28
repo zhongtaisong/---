@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev02": "node ./app.js",
     "dev": "nodemon ./bin/www",
     "start": "node ./bin/www",
     "start:db": "brew services start mongodb/brew/mongodb-community",
