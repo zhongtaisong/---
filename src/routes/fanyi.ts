@@ -1,11 +1,12 @@
-var express = require('express');
-var router = express.Router();
-const axios = require('axios');
-const path = require('path');
-const fs = require('fs');
+import express, { Request, Response, NextFunction, } from 'express';
+import path from 'path';
+import fs from 'fs';
+import axios from 'axios';
 
-router.post('/fanyi', function(req, res, next) {
-  let { text, language, } = req.body;
+const router = express.Router();
+
+router.post('/baidu', (req, res) => {
+  const { text, language, } = req?.body || {};
   if(!text) {
     return res.send("");
   }
@@ -58,37 +59,5 @@ router.post('/fanyi', function(req, res, next) {
 
 
 });
-router.post('/download', function(req, res, next) {
-  const { data, } = req.body;
-  if(!Array.isArray(data) || !data.length) {
-    return res.send(null);
-  }
 
-  const filePath = path.join(__dirname, 'language.json'); // 设置文件路径
-
-  const result = data.reduce((res, item) => {
-    res[item?.key] = item?.value;
-    return res;
-  }, {});
-
-  // 写入文件
-  fs.writeFile(filePath, JSON.stringify(result, null, 2), (err) => {
-    if (err) {
-      return res.status(500).send("Failed to create file");
-    }
-    // 文件创建成功后，提供下载
-    res.download(filePath, 'en.json', (err) => {
-      if (err) {
-        return res.status(500).send("Failed to download file");
-      }
-      // 可选：下载完成后删除文件
-      fs.unlink(filePath, err => {
-        if (err) {
-          return console.log("Error deleting the file");
-        }
-      });
-    });
-  })
-});
-
-module.exports = router;
+export default router;
