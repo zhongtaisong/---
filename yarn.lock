@@ -83,6 +83,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/debug@^4.1.12":
+  version "4.1.12"
+  resolved "https://registry.npmmirror.com/@types/debug/-/debug-4.1.12.tgz#a155f21690871953410df4b6b6f53187f0500917"
+  integrity sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==
+  dependencies:
+    "@types/ms" "*"
+
 "@types/express-serve-static-core@^5.0.0":
   version "5.0.1"
   resolved "https://registry.npmmirror.com/@types/express-serve-static-core/-/express-serve-static-core-5.0.1.tgz#3c9997ae9d00bc236e45c6374e84f2596458d9db"
@@ -126,6 +133,11 @@
   integrity sha512-iRYSDKVaC6FkGSpEVVIvrRGw0DfJMiQzIn3qr2G5B3C//AWkulhXgaBd7tS9/J79GWSYMTHGs7PfI5b3Y8m+RQ==
   dependencies:
     "@types/node" "*"
+
+"@types/ms@*":
+  version "0.7.34"
+  resolved "https://registry.npmmirror.com/@types/ms/-/ms-0.7.34.tgz#10964ba0dee6ac4cd462e2795b6bebd407303433"
+  integrity sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==
 
 "@types/node@*", "@types/node@^22.8.2":
   version "22.8.2"
@@ -355,6 +367,11 @@ create-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.npmmirror.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
+
+crypto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmmirror.com/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
+  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
 
 debug@2.6.9, debug@~2.6.9:
   version "2.6.9"

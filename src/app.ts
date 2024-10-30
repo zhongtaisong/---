@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import logger from 'morgan';
 import fanyiRouter from './routes/fanyi';
-import languageRouter from './routes/language';
+// import languageRouter from './routes/language';
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/fanyi', fanyiRouter);
-app.use('/language', languageRouter);
+// app.use('/language', languageRouter);
 
 app.use(function(req, res, next) {
   next(createError(404));

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import app from './../app';
 import debugLib from 'debug';
 import http from 'http';
+import app from './../app';
 
 const debug = debugLib('i18n-platform-services:server');
 
