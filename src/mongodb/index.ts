@@ -1,14 +1,20 @@
-// 引入 mongoose 
-const mongoose = require('mongoose')
+import { createLogContentFn } from '@common/kit';
+import mongoose from 'mongoose';
 
-// 连接数据库，自动新建 ExpressApi 库
 mongoose.connect('mongodb://localhost:27017/i18n', {
+    // @ts-ignore
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
 }).then(() => {
-    console.log('Connected to MongoDB!');
+    createLogContentFn({
+        path: "mongodb",
+        log: "连接成功",
+    });
 }).catch(err => {
-    console.error('Connection error:', err);
+    createLogContentFn({
+        path: "mongodb",
+        log: `连接失败，${ err }`,
+    });
 });
 
-module.exports = mongoose
+export default mongoose;

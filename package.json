@@ -3,11 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "nodemon ./bin/www",
-    "start": "npx ts-node ./src/bin/www",
+    "start": "nodemon --watch ./src --exec \"ts-node -r tsconfig-paths/register\" ./src/bin/www.ts",
     "start:db": "brew services start mongodb/brew/mongodb-community",
-    "stop:db": "brew services stop mongodb/brew/mongodb-community",
-    "tsconfig": "tsc --init"
+    "stop:db": "brew services stop mongodb/brew/mongodb-community"
   },
   "dependencies": {
     "axios": "^1.7.7",
@@ -31,6 +29,7 @@
     "@types/node": "^22.8.2",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.3"
   }
 }

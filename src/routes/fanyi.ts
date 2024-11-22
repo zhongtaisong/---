@@ -1,25 +1,16 @@
-import express, { Request, Response, } from 'express';
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
-import axios from 'axios';
-import { baiduTranslateFn, createLogContentFn, createSendContentFn } from '@common/kit';
-
+import express from 'express';
+import { baiduTranslateFn, createSendContentFn } from '@common/kit';
+import { SUCCESS_CODE } from '@common/const';
 const router = express.Router();
 
-router.post('/baidu', async (req: Request, res: Response) => {
+router.post('/baidu', async (req, res) => {
   const { text, language, } = req?.body || {};
   const send = createSendContentFn(res);
   if(!text || !language) {
-    createLogContentFn({
-      path: "/baidu",
-      log: "参数不正确",
-    });
-    send({
-      code: "fanyi000000",
+    return send({
+      code: "fanyi-000001",
       message: "参数不正确"
     });
-    return;
   }
 
   const result = await baiduTranslateFn({
@@ -27,6 +18,11 @@ router.post('/baidu', async (req: Request, res: Response) => {
     to: language,
   });
 
+  send({
+    code: SUCCESS_CODE,
+    context: result || "",
+    message: "操作成功"
+  });
 });
 
 export default router;

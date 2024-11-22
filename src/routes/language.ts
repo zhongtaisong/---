@@ -1,111 +1,210 @@
-var express = require('express');
-var router = express.Router();
-const path = require('path');
-const fs = require('fs');
-const { Model, } = require('../model/Language')
 
-// 批量 - 新增更新
-router.post('/add', async (req, res, next) => {
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import languageModel from '@model/language-model'
+import { createSendContentFn } from '@common/kit';
+import { PAGE_NUM, PAGE_SIZE, SUCCESS_CODE } from '@common/const';
+const router = express.Router();
+
+/**
+ * 批量更新
+ */
+router.post('/bulkWrite', async (req, res) => {
   const { list, } = req.body;
-  const operations = list.map((item, index) => {
-    const languageId_new = item?.languageId || `${ Date.now() + index }`;
+  const send = createSendContentFn(res);
+  if(!Array.isArray(list) || !list.length) {
+    return send({
+      code: "language-000001",
+      message: "参数不正确"
+    });
+  }
+
+  const list_new = list.filter(item => item && Object.keys(list).length);
+  if(!list_new.length) {
+    return send({
+      code: "language-000002",
+      message: "参数不正确"
+    });
+  }
+
+  const data = list_new.map((item, index) => {
+    if(!item || !Object.keys(item).length) return;
+
+    const { info, } = item;
+    if(!info || !Object.keys(info).length) return;
+
+    const id = item?.id || `${ Date.now() + index }`;
     Object.assign(item, {
-      lalanguageId: languageId_new,
+      id,
     })
     return {
       updateOne: {
-        filter: { languageId: languageId_new },
+        filter: { id, },
         update: item,
         upsert: true,
         new: true,
       }
     };
+  }).filter(Boolean);
+
+  languageModel.bulkWrite(data).then(() => {
+    send({
+      code: SUCCESS_CODE,
+      context: null,
+      message: "操作成功"
+    });
+  }).catch(err => {
+    send({
+      code: "language-000003",
+      context: JSON.stringify(err ?? ""),
+      message: "操作失败"
+    });
   });
-
-  Model.bulkWrite(operations)
-    .then(result => {
-          console.log(result);
-          res.send(result);
-      })
-    .catch(err => {
-          console.log(err);
-          res.send(err);
-      });
 });
 
-// 单条 - 新增、更新
-router.post('/update', async (req, res, next) => {
-  const { languageId, ...params } = req.body;
-  const languageId_new = languageId || `${ Date.now() }`;
+/**
+ * 批量删除
+ */
+router.post('/deleteMany', async (req, res) => {
+  const { ids, } = req.body;
+  const send = createSendContentFn(res);
+  if(!Array.isArray(ids) || !ids.length) {
+    return send({
+      code: "language-000004",
+      message: "参数不正确"
+    });
+  }
+
+  const ids_new = ids.filter(Boolean);
+  if(!ids_new.length) {
+    return send({
+      code: "language-000005",
+      message: "参数不正确"
+    });
+  }
   
-  Model.findOneAndUpdate({ languageId: languageId_new, }, params, {
-    upsert: true,
-    new: true,
-  })
-    .then(result => {
-          res.send(result);
-      })
-    .catch(err => {
-          res.send(err);
-      });
+  languageModel.deleteMany({ 
+    id: { $in: ids_new, },
+  }).then(() => {
+    send({
+      code: SUCCESS_CODE,
+      context: null,
+      message: "操作成功"
+    });
+  }).catch(err => {
+    send({
+      code: "language-000006",
+      context: JSON.stringify(err ?? ""),
+      message: "操作失败"
+    });
+  });
 });
 
-// 单条 - 删除
-router.post('/delete', async (req, res, next) => {
-  const { languageId, } = req.body;
-  const languageId_new = languageId || `${ Date.now() }`;
-  
-  Model.deleteOne({ languageId: languageId_new, })
-    .then(result => {
-          console.log(result);
-          res.send(result);
-      })
-    .catch(err => {
-          console.log(err);
-          res.send(err);
-      });
-});
+/**
+ * 分页查询
+ */
+router.get('/list', async (req, res)=>{
+  const { pageNum, pageSize, } = req.body;
+  const page_num = pageNum ?? PAGE_NUM;
+  const page_size = pageSize ?? PAGE_SIZE;
+  const send = createSendContentFn(res);
+  if(typeof page_num !== 'number' || typeof page_size !== 'number') {
+    return send({
+      code: "language-000007",
+      message: "参数不正确"
+    });
+  }
+  if(page_num < 0 || page_size < 0) {
+    return send({
+      code: "language-000008",
+      message: "参数不正确"
+    });
+  }
 
-router.get('/list', async(req, res, next)=>{
-  const user = await Model.find()
-  res.send({ 
-   code: 200,
-    msg: '获取成功',
-    data: user
-  })
+  try {
+    const result = await languageModel.find().skip(page_num * page_size).limit(page_size).sort({ createTime: -1 }).exec();
+    const total = await languageModel.countDocuments();
+    send({
+      code: SUCCESS_CODE,
+      context: {
+        pageNum: page_num,
+        totalPages: Math.ceil(total / page_size),
+        pageSize: page_size,
+        total,
+        content: result || [],
+      },
+      message: "操作成功"
+    });
+  } catch (error) {
+    send({
+      code: "language-000009",
+      context: JSON.stringify(error ?? ""),
+      message: "操作失败"
+    });
+  }
 })
 
-router.get('/export/:language', async (req, res, next) => {
+/**
+ * 导出json
+ */
+router.get('/export/:language', async (req, res) => {
   const { language, } = req.params;
+  const send = createSendContentFn(res);
   const key = language || "zh";
-  const list = await Model.find();
-  const filePath = path.join(__dirname, `${ key }.json`); // 设置文件路径
 
-  const result = list.reduce((res, item) => {
-    if(item?.zh) {
-      res[item?.zh] = item?.[key] || "";
-    }
-    return res;
-  }, {});
-
-  // 写入文件
-  fs.writeFile(filePath, JSON.stringify(result, null, 2), (err) => {
-    if (err) {
-      return res.status(500).send("Failed to create file");
-    }
-    // 文件创建成功后，提供下载
-    res.download(filePath, `${ key }.json`, (err) => {
-      if (err) {
-        return res.status(500).send("Failed to download file");
-      }
-      // 可选：下载完成后删除文件
-      fs.unlink(filePath, err => {
-        if (err) {
-          return console.log("Error deleting the file");
+  try {
+    const list = await languageModel.find().sort({ createTime: -1 }).exec();
+    const result = list.reduce((prev, item) => {
+      const info = item?.info || {};
+      if(info && Object.keys(info).length) {
+        const value = info[key];
+        if(value) {
+          prev[value] = value;
         }
-      });
+      }
+      return prev;
+    }, {});
+
+    const file_path = path.join(__dirname, `../temp/${ key }.json`);
+    fs.mkdirSync(path.dirname(file_path), { recursive: true });
+    fs.writeFile(
+      file_path, 
+      JSON.stringify(result, null, 2), 
+      (err) => {
+        if(err) {
+          return send({
+            code: "language-000011",
+            message: "操作失败"
+          });
+        }
+        
+        res.download(file_path, `${ key }.json`, (err) => {
+          if (err) {
+            return send({
+              code: "language-000012",
+              message: "操作失败"
+            });
+          }
+
+          fs.unlink(file_path, err => {
+            if(err) {
+              return send({
+                code: "language-000013",
+                message: "操作失败"
+              });
+            }
+          });
+        });
+      }
+    )
+  } catch (error) {
+    send({
+      code: "language-000010",
+      context: JSON.stringify(error ?? ""),
+      message: "操作失败"
     });
-  })
+  }
 });
 
-module.exports = router;
+export default router;

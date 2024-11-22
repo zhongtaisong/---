@@ -8,12 +8,13 @@
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "skipLibCheck": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@common/*": ["common/*"],
-      "@model/*": ["model/*"],
-      "@public/*": ["public/*"],
-      "@routes/*": ["routes/*"]
+      "@common/*": ["src/common/*"],
+      "@model/*": ["src/model/*"],
+      "@public/*": ["src/public/*"],
+      "@routes/*": ["src/routes/*"],
+      "@mongodb/*": ["src/mongodb/*"]
     }
   },
   "include": ["src/**/*"],

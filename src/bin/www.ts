@@ -2,6 +2,7 @@
 import debugLib from 'debug';
 import http from 'http';
 import app from './../app';
+import { createLogContentFn } from '@common/kit';
 
 const debug = debugLib('i18n-platform-services:server');
 
@@ -78,7 +79,10 @@ function onError(error) {
  */
 
 function onListening() {
-  console.log(`端口: ${ port }服务已启动`);
+  createLogContentFn({
+    path: `端口号${ port }`,
+    log: "服务已启动",
+  });
   
   const addr = server.address();
   const bind = typeof addr === 'string'

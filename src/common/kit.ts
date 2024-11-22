@@ -2,6 +2,7 @@ import { Response, } from 'express';
 import crypto from 'crypto';
 import { BAIDU_APP_ID, BAIDU_APP_SECRET, BAIDU_TRANSLATE_URL } from './config';
 import axios from 'axios';
+import { SUCCESS_CODE } from './const';
 
 /**
  * 创建响应体 - 操作
@@ -16,10 +17,19 @@ export const createSendContentFn = (res: Response) => (params: {
 }) => {
     if(!res || !Object.keys(res).length) return;
 
-    return res?.status?.(200)?.send({
-        code: params?.code ?? null,
+    const code = params?.code ?? null;
+    const message = params?.message ?? null;
+    if(code !== SUCCESS_CODE) {
+        createLogContentFn({
+            path: code,
+            log: message,
+        });
+    }
+
+    res?.status?.(200)?.send({
+        code,
         context: params?.context ?? null,
-        message: params?.message ?? null,
+        message,
     });
 }
 
@@ -39,7 +49,7 @@ export const createLogContentFn = (params: {
     const { path, log, } = params;
     if(!path) return;
 
-    console.log(`${ time } ${ path } ${ log || "" }`);
+    console.log(`${ time } --- ${ path } --- ${ log || "" }`);
 }
 
 /**
@@ -88,7 +98,7 @@ export const baiduTranslateFn = (params: {
 
         let url = BAIDU_TRANSLATE_URL;
         const params_str = Object.entries(params_new).reduce((result, [key, value], index, arr) => {
-            result += `key=${ value || "" }${ index < arr.length - 1 ? "&" : "" }`;
+            result += `${ key }=${ value || "" }${ index < arr.length - 1 ? "&" : "" }`;
             return result;
         }, "");
         if(params_str) {
@@ -104,8 +114,7 @@ export const baiduTranslateFn = (params: {
                 reject(error_msg);
             }
         }).catch(error => {
-            reject(error)
-            // console.error('翻译失败：', error);
+            reject(error);
         })
-    })
+    }) as Promise<string>;
 }
