@@ -3,7 +3,7 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import languageModel from '@model/language-model'
-import { createSendContentFn } from '@common/kit';
+import { createLogContentFn, createSendContentFn } from '@common/kit';
 import { PAGE_NUM, PAGE_SIZE, SUCCESS_CODE } from '@common/const';
 const router = express.Router();
 
@@ -48,6 +48,13 @@ router.post('/bulkWrite', async (req, res) => {
     };
   }).filter(Boolean);
 
+  if(!Array.isArray(data) || !data.length) {
+    return send({
+      code: "language-000015",
+      message: "参数不正确"
+    });
+  }
+  
   languageModel.bulkWrite(data).then(() => {
     send({
       code: SUCCESS_CODE,
@@ -104,7 +111,7 @@ router.post('/deleteMany', async (req, res) => {
 /**
  * 分页查询
  */
-router.get('/list', async (req, res)=>{
+router.post('/list', async (req, res)=>{
   const { pageNum, pageSize, } = req.body;
   const page_num = pageNum ?? PAGE_NUM;
   const page_size = pageSize ?? PAGE_SIZE;
@@ -123,7 +130,10 @@ router.get('/list', async (req, res)=>{
   }
 
   try {
-    const result = await languageModel.find().skip(page_num * page_size).limit(page_size).sort({ createTime: -1 }).exec();
+    const result = await languageModel.find({}, {
+      _id: 0,
+      __v: 0,
+    }).skip(page_num * page_size).limit(page_size).sort({ createTime: -1 }).exec();
     const total = await languageModel.countDocuments();
     send({
       code: SUCCESS_CODE,
@@ -148,25 +158,33 @@ router.get('/list', async (req, res)=>{
 /**
  * 导出json
  */
-router.get('/export/:language', async (req, res) => {
-  const { language, } = req.params;
+router.post('/export', async (req, res) => {
+  const { language, ids, } = req.body;
   const send = createSendContentFn(res);
-  const key = language || "zh";
+  const language_key = language || "zh";
+
+  const params = {};
+  if(Array.isArray(ids) && ids.length) {
+    Object.assign(params, {
+      id: { $in: ids, },
+    })
+  }
 
   try {
-    const list = await languageModel.find().sort({ createTime: -1 }).exec();
+    const list = await languageModel.find(params).sort({ createTime: -1 }).exec();
     const result = list.reduce((prev, item) => {
       const info = item?.info || {};
       if(info && Object.keys(info).length) {
-        const value = info[key];
-        if(value) {
-          prev[value] = value;
+        const key = info["zh"];
+        const value = info[language_key];
+        if(key) {
+          prev[key] = value || "";
         }
       }
       return prev;
     }, {});
 
-    const file_path = path.join(__dirname, `../temp/${ key }.json`);
+    const file_path = path.join(__dirname, `../temp/${ language_key }.json`);
     fs.mkdirSync(path.dirname(file_path), { recursive: true });
     fs.writeFile(
       file_path, 
@@ -179,7 +197,7 @@ router.get('/export/:language', async (req, res) => {
           });
         }
         
-        res.download(file_path, `${ key }.json`, (err) => {
+        res.download(file_path, `${ language_key }.json`, (err) => {
           if (err) {
             return send({
               code: "language-000012",
@@ -194,6 +212,11 @@ router.get('/export/:language', async (req, res) => {
                 message: "操作失败"
               });
             }
+
+            return createLogContentFn({
+              path: "/export",
+              log: "导出json成功",
+            });
           });
         });
       }
