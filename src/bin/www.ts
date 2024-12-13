@@ -1,13 +1,10 @@
 #!/usr/bin/env node
+import debugLib from 'debug';
+import http from 'http';
+import app from './../app';
+import { createLogContentFn } from '@common/kit';
 
-/**
- * Module dependencies.
- */
-
-const app = require('../app');
-const debug = require('debug')('i18n-services:server');
-const http = require('http');
-const MongoClient = require('mongodb').MongoClient;
+const debug = debugLib('i18n-platform-services:server');
 
 /**
  * Get port from environment and store in Express.
@@ -82,7 +79,10 @@ function onError(error) {
  */
 
 function onListening() {
-  console.log(`${ port }端口服务已启动`);
+  createLogContentFn({
+    path: `端口号${ port }`,
+    log: "服务已启动",
+  });
   
   const addr = server.address();
   const bind = typeof addr === 'string'
