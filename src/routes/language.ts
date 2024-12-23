@@ -125,7 +125,7 @@ router.post('/deleteMany', async (req, res) => {
  * 分页查询
  */
 router.post('/list', async (req, res)=>{
-  const { pageNum, pageSize, } = req.body;
+  const { pageNum, pageSize, zh, } = req.body;
   const page_num = pageNum ?? PAGE_NUM;
   const page_size = pageSize ?? PAGE_SIZE;
   const send = createSendContentFn(res);
@@ -144,7 +144,13 @@ router.post('/list', async (req, res)=>{
   }
 
   try {
-    const result = await languageModel.find({}, {
+    const filter_params = {};
+    if(zh) {
+      Object.assign(filter_params, {
+        'info.zh': new RegExp(zh, 'i'),
+      });
+    }
+    const result = await languageModel.find(filter_params, {
       _id: 0,
       __v: 0,
     }).skip(page_num * page_size).limit(page_size).sort({ createTime: -1 }).exec();
