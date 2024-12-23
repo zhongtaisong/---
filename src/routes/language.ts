@@ -9,8 +9,9 @@ const router = express.Router();
 /**
  * 批量更新
  */
-router.post('/bulkWrite', async (req, res) => {
+router.post('/bulkWrite/:action', async (req, res) => {
   const { list, } = req.body;
+  const { action, } = req.params;
   const send = createSendContentFn(res);
   const languageModel = createModalFn(req);
   if(!Array.isArray(list) || !list.length) {
@@ -26,6 +27,17 @@ router.post('/bulkWrite', async (req, res) => {
       code: "language-000002",
       message: "参数不正确"
     });
+  }
+
+  if(["add"].includes(action)) {
+    const zh_list = list_new.map(item => item?.info?.zh).filter(Boolean);
+    const zh_result = await languageModel.find({ 'info.zh': { $in: zh_list, } });
+    if(Array.isArray(zh_result) && zh_result.length) {
+      return send({
+        code: "language-000016",
+        message: `"${ zh_result?.[0]?.info?.zh }"已存在`,
+      });
+    }
   }
 
   const data = list_new.map((item, index) => {
