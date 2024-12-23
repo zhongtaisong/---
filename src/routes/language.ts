@@ -154,7 +154,7 @@ router.post('/list', async (req, res)=>{
       _id: 0,
       __v: 0,
     }).skip(page_num * page_size).limit(page_size).sort({ createTime: -1 }).exec();
-    const total = await languageModel.countDocuments();
+    const total = await languageModel.countDocuments(filter_params);
     send({
       code: SUCCESS_CODE,
       context: {
