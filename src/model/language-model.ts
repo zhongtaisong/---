@@ -26,4 +26,12 @@ const language_schema = new mongodb.Schema({
     }
 })
 
-export default mongodb.model("Language", language_schema);
+function getModelByName(modelName) {
+    if (mongodb.models[modelName]) {
+     return mongodb.model(modelName);
+    }
+
+    return mongodb.model(modelName, language_schema);   
+ }
+
+export default getModelByName;

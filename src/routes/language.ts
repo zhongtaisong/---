@@ -2,8 +2,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import languageModel from '@model/language-model'
-import { createLogContentFn, createSendContentFn } from '@common/kit';
+import { createLogContentFn, createModalFn, createSendContentFn, getTerminalFn } from '@common/kit';
 import { PAGE_NUM, PAGE_SIZE, SUCCESS_CODE } from '@common/const';
 const router = express.Router();
 
@@ -13,6 +12,7 @@ const router = express.Router();
 router.post('/bulkWrite', async (req, res) => {
   const { list, } = req.body;
   const send = createSendContentFn(res);
+  const languageModel = createModalFn(req);
   if(!Array.isArray(list) || !list.length) {
     return send({
       code: "language-000001",
@@ -76,6 +76,7 @@ router.post('/bulkWrite', async (req, res) => {
 router.post('/deleteMany', async (req, res) => {
   const { ids, } = req.body;
   const send = createSendContentFn(res);
+  const languageModel = createModalFn(req);
   if(!Array.isArray(ids) || !ids.length) {
     return send({
       code: "language-000004",
@@ -116,6 +117,7 @@ router.post('/list', async (req, res)=>{
   const page_num = pageNum ?? PAGE_NUM;
   const page_size = pageSize ?? PAGE_SIZE;
   const send = createSendContentFn(res);
+  const languageModel = createModalFn(req);
   if(typeof page_num !== 'number' || typeof page_size !== 'number') {
     return send({
       code: "language-000007",
@@ -161,6 +163,7 @@ router.post('/list', async (req, res)=>{
 router.post('/export', async (req, res) => {
   const { language, ids, } = req.body;
   const send = createSendContentFn(res);
+  const languageModel = createModalFn(req);
   const language_key = language || "zh";
 
   const params = {};
