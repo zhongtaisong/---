@@ -13,16 +13,23 @@ router.post('/baidu', async (req, res) => {
     });
   }
 
-  const result = await baiduTranslateFn({
-    q: text,
-    to: language,
-  });
-
-  send({
-    code: SUCCESS_CODE,
-    context: result || "",
-    message: "操作成功"
-  });
+  try {
+    const result = await baiduTranslateFn({
+      q: text,
+      to: language,
+    });
+    
+    send({
+      code: SUCCESS_CODE,
+      context: result || "",
+      message: "操作成功"
+    });
+  } catch (error) {
+    return send({
+      code: "fanyi-000002",
+      message: String(error).includes("Access Limit") ? "访问频率过高" : error,
+    });
+  }
 });
 
 export default router;

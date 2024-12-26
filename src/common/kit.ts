@@ -1,8 +1,9 @@
-import { Response, } from 'express';
+import { Response, Request, } from 'express';
 import crypto from 'crypto';
 import { BAIDU_APP_ID, BAIDU_APP_SECRET, BAIDU_TRANSLATE_URL } from './config';
 import axios from 'axios';
 import { SUCCESS_CODE } from './const';
+import getModelByName from '@model/language-model';
 
 /**
  * 创建响应体 - 操作
@@ -118,3 +119,17 @@ export const baiduTranslateFn = (params: {
         })
     }) as Promise<string>;
 }
+
+/**
+ * 获取终端 - 操作
+ * @param {*} req 
+ * @returns 
+ */
+export const getTerminalFn = (req: Request) => req?.headers?.terminal || "i18n-node";
+
+/**
+ * 创建Modal - 操作
+ * @param req 
+ * @returns 
+ */
+export const createModalFn = (req: Request) => getModelByName(getTerminalFn(req));
